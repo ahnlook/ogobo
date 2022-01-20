@@ -1,0 +1,69 @@
+.next-text {
+  font-size: 31px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.workout-box {
+  border-bottom: solid 1px;
+  text-align: center;
+  font-size: 31px;
+  font-weight: 600;
+  padding: 10px;
+}  
+
+.workout-box span {
+  margin: 3px;
+}
+
+.doing-btn-group {
+}
+
+.btn-success {
+  height: 65px;
+  margin-top: 30px;
+  border: 2px solid #3498da;
+  background-color: #3498da;
+}
+
+.btn-barely-success {
+  height: 65px;
+  margin-top: 30px;
+  border: 2px solid #24AE60;
+  background-color: #24AE60;
+}
+
+.btn-fail {
+  height: 65px;
+  margin-top: 30px;
+  border: 2px solid #BF392B;
+  background-color: #BF392B;
+}
+
+.btn-close {
+  height: 65px;
+  margin-top: 90px;
+  border: 2px solid #7E8C8D;
+  background-color: #7E8C8D;
+}
+
+.rest-modal,
+.finish-modal {
+  font-size: 28px;
+  font-weight: 400;
+  text-align: center;
+  padding: 100px 50px;
+  box-sizing: border-box;
+}
+
+.btn-rest {
+  height: 65px;
+  border: 2px solid #3498da;
+  background-color: #3498da;
+}
+
+.btn-finish {
+  height: 65px;
+  border: 2px solid #3498da;
+  background-color: #3498da;
+}

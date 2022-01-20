@@ -1,0 +1,17 @@
+.radio-btn-group {
+  display: flex;
+  box-sizing: border-box;
+  font-weight: 600;
+  font-size: 28px;
+  margin: 15px 0;
+}
+
+.radio-btn-group ul {
+  width: 100%;
+}
+
+.radio-btn-group ul li {
+  float: left;
+  width: 33%;
+}
+
