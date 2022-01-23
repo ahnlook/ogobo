@@ -9,6 +9,9 @@ import Setting from './components/Setting.js';
 import StartWorkout from './components/StartWorkout';
 
 function App() {
+  const [savedData, setSavedData] = useState(localStorage.getItem('isFirstStart'))
+  console.log(savedData)
+  
   const [workoutData, setWorkoutData] = useState(WorkoutData)
 
   // const [lastDate, setLastDate] = useState(localStorage.getItem('마지막 운동'))
@@ -20,27 +23,17 @@ function App() {
   const [deadLift, setDeadLift] = useState(Number(localStorage.getItem('데드리프트')))
 
   const [thisTurnWorkout, setThisTurnWorkout] = useState([])
-  const [currentExerciseIndex, setCurrentExcerciseIndex] = useState(0)
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [currentSet, setCurrentSet] = useState(0)
-  const [tellCurrentWorkout, setTellCurrentWorkout] = useState(true)
-  const [tellRestTime, setTellRestTime] = useState(false)
-  const [tellFinishedWorkout, setTellFinishedWorkout] = useState(false)
-  console.log('check:',thisTurnWorkout)
+
+  const [breakTime, setBreakTime] = useState(false)
+  const [finished, setFinished] = useState(false)
 
   // const test = workoutData.filter(data => (data.setA))
   const getWorkoutA = _.filter(workoutData, {workoutA : true})
   const workoutA = getWorkoutA
   const getWorkoutB = _.filter(workoutData, {workoutB : true})
   const workoutB = getWorkoutB
-
-  const latestData = {
-    workout: whichWorkout,
-    squat: squat,
-    benchPress: benchPress,
-    barbellRow: barbellRow,
-    overheadPress: overheadPress,
-    deadLift: deadLift
-  }
 
   const onStartWorkout = () => {
     if (whichWorkout === 'workoutA') {
@@ -49,69 +42,112 @@ function App() {
           title: '스쿼트',
           weight: squat,
           round: 5,
-          results: []
+          results: [],
+          checkFail: false,
+          addWeight: 2.5
         }, {
           title: '벤치프레스',
           weight: benchPress,
           round: 5,
-          results: []
+          results: [],
+          checkFail: false,
+          addWeight: 2.5
         }, {
           title: '바벨로우',
           weight: barbellRow,
           round: 5,
-          results: []
+          results: [],
+          checkFail: false,
+          addWeight: 2.5
         }])
     } else {
       setThisTurnWorkout(
-        {
+        [{
           title: '스쿼트',
           weight: squat,
           round: 5,
-          results: []
+          results: [],
+          checkFail: false,
+          addWeight: 2.5
         },{
           title: '오버헤드프레스',
           weight: overheadPress,
           round: 5,
-          results: []
+          results: [],
+          checkFail: false,
+          addWeight: 2.5
         }, {
           title: '데드리프트',
           weight: deadLift,
           round: 1,
-          results: []
-        })
+          results: [],
+          checkFail: false,
+          addWeight: 5
+        }])
     }
-    setCurrentExcerciseIndex(0)
+    setCurrentExerciseIndex(0)
     setCurrentSet(1)
   }
 
   const onSetEnd = (result) => {
     const updatedWorkout = [...thisTurnWorkout]
-    const currentExcercise = updatedWorkout[currentExerciseIndex]
-    updatedWorkout[currentExerciseIndex].results.push(result)
-    setThisTurnWorkout(updatedWorkout)
-    
+    const currentExercise = updatedWorkout[currentExerciseIndex]
+    currentExercise.results.push(result)
 
+    result === 'fail' &&
+    (currentExercise.checkFail = true)
 
-    if (currentExerciseIndex > 2) {
-      setTellCurrentWorkout(false)
-      setTellFinishedWorkout(true)
-    } else if (currentSet >= currentExcercise.round) {
-      setCurrentExcerciseIndex(currentExerciseIndex + 1) // workout title
-      setCurrentSet(1) // 1세트, 2세트 ...
-    } else {
-      setCurrentSet(currentSet + 1) // 1세트, 2세트 ...
+    const addedWeight =
+      currentExercise.checkFail
+        ? currentExercise.weight
+        : (currentExercise.weight + currentExercise.addWeight)
+
+    const setAddedWeight = () => {
+      localStorage.setItem(currentExercise.title, addedWeight.toString())
     }
 
-    setTellCurrentWorkout(false)
-    setTellRestTime(true)
+    console.log('addedWeight', addedWeight)
+    console.log('currentExercise.weight:',currentExercise.weight)
+    console.log('currentExercise.addWeight',currentExercise.addWeight)
+    setThisTurnWorkout(updatedWorkout)
+
+    if (currentSet === currentExercise.round && currentExerciseIndex === 2) {
+      setFinished(true)
+      setAddedWeight()
+      onChangeWorkout()
+    } else if (currentSet < currentExercise.round) {
+      setCurrentSet(currentSet + 1) // 다음 세트
+      setBreakTime(true)
+    } else {
+      setCurrentExerciseIndex(currentExerciseIndex + 1) // 다음 종목
+      setCurrentSet(1) // 1세트부터
+      setBreakTime(true)
+      setAddedWeight()
+    }
   }
 
-  const onRestEnd = (value) => {
-    setTellCurrentWorkout(value)
-    setTellRestTime(!value)
+  const onBreakTime = (value) => {
+    setBreakTime(value)
+  }
+  const onFinished = (value) => {
+    setFinished(value)
   }
 
-  console.log('thisTurnWorkout', thisTurnWorkout)
+  const onChangeWorkout = () => {
+    if (whichWorkout === 'workoutA') {
+      localStorage.setItem('워크아웃', 'workoutB')
+      setWhichWorkout('workoutB')
+    } else {
+      localStorage.setItem('워크아웃', 'workoutA')
+      setWhichWorkout('workoutA')
+    }
+
+    setSquat(Number(localStorage.getItem('스쿼트')))
+    setBenchPress(Number(localStorage.getItem('벤치프레스')))
+    setBarbellRow(Number(localStorage.getItem('바벨로우')))
+    setOverheadPress(Number(localStorage.getItem('오버헤드프레스')))
+    setDeadLift(Number(localStorage.getItem('데드리프트')))
+  }
 
   // MainPage 마지막 운동 날짜 구하기
   let getDate = () => {
@@ -123,23 +159,13 @@ function App() {
     return todayYear + '. ' + todayMonth + '. ' + todayDate
   }
 
-  // 운동 종료 후 자동 무게 증량 값 저장
-  const onFinishedWorkoutDataAutoSave = (newData) => {
-    const doDay = getDate()
-    localStorage.setItem(doDay, JSON.stringify(latestData))
-
-    setWhichWorkout(newData.workout)
-    setSquat(newData.squat)
-    setBenchPress(newData.benchPress)
-    setBarbellRow(newData.barbellRow)
-    setOverheadPress(newData.overheadPress)
-    setDeadLift(newData.deadLift)
-    localStorage.setItem('워크아웃', newData.workout)
-    localStorage.setItem('스쿼트', newData.squat.toString())
-    localStorage.setItem('벤치프레스', newData.benchPress.toString())
-    localStorage.setItem('바벨로우', newData.barbellRow.toString())
-    localStorage.setItem('오버헤드프레스', newData.overheadPress.toString())
-    localStorage.setItem('데드리프트', newData.deadLift.toString())
+  const checkFirstStart = () => {
+    if (!squat && !benchPress && !barbellRow && !overheadPress && !deadLift) {
+      setSavedData(false)
+      localStorage.setItem('isFirstStart', false)
+    } else {
+        setSavedData(true)
+      }
   }
 
   // SettingForm input 값 저장하기
@@ -150,10 +176,7 @@ function App() {
     localStorage.setItem('바벨로우', barbellRow.toString())
     localStorage.setItem('오버헤드프레스', overheadPress.toString())
     localStorage.setItem('데드리프트', deadLift.toString())
-  }
-   
-  const onSaveData = () => {
-    localStorage.setItem('마지막 운동', getDate.toString())
+    checkFirstStart()
   }
 
   const onWorkoutSet = (workoutSet) => {
@@ -190,6 +213,7 @@ function App() {
         <Route exact path="/">
           <MainPage
             today={getDate}
+            savedData={savedData}
             squat={squat}
             benchPress={benchPress}
             barbellRow={barbellRow}
@@ -227,32 +251,14 @@ function App() {
         <Route path="/start">
           <StartWorkout
             today={getDate}
-            onSaveData={onSaveData}
-            latestData={latestData}
-            squat={squat}
-            benchPress={benchPress}
-            barbellRow={barbellRow}
-            overheadPress={overheadPress}
-            deadLift={deadLift}
-            workoutA={workoutA}
-            workoutB={workoutB}
-            whichWorkout={whichWorkout} 
-            onWorkoutSet={onWorkoutSet}
-            onSquatChange={onSquatChange}
-            onBenchPressChange={onBenchPressChange}
-            onBarbellRowChange={onBarbellRowChange}
-            onOverheadPressChange={onOverheadPressChange}
-            onDeadLiftChange={onDeadLiftChange}
-            onSubmit={onSettingFormSubmit}
-            onFinishedWorkoutDataAutoSave={onFinishedWorkoutDataAutoSave}
-            thisTrunWorkout={thisTurnWorkout}
+            thisTurnWorkout={thisTurnWorkout}
             currentSet={currentSet}
-            currentExcerciseIndex={currentExerciseIndex}
+            currentExerciseIndex={currentExerciseIndex}
             onSetEnd={onSetEnd}
-            tellCurrentWorkout={tellCurrentWorkout}
-            tellRestTime={tellRestTime}
-            tellFinishedWorkout={tellFinishedWorkout}
-            onRestEnd={onRestEnd}
+            onBreakTime={onBreakTime}
+            breakTime={breakTime}
+            onFinished={onFinished}
+            finished={finished}
           />
         </Route>
 
